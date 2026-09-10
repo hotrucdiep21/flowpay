@@ -52,7 +52,7 @@ public class TransferTest {
         Transfer transfer = createTransfer();
         transfer.markSucceeded();
 
-        assertEquals(TransferStatus.SUCCESS, transfer.getStatus());
+        assertEquals(TransferStatus.SUCCEEDED, transfer.getStatus());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class TransferTest {
         transfer.markSucceeded();
 
         assertThrows(IllegalStateException.class, transfer::markFailed);
-        assertEquals(TransferStatus.SUCCESS, transfer.getStatus());
+        assertEquals(TransferStatus.SUCCEEDED, transfer.getStatus());
     }
 
 }

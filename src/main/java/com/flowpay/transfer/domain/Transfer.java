@@ -60,7 +60,7 @@ public class Transfer {
 
     public void markSucceeded() {
         ensurePending();
-        this.status = TransferStatus.SUCCESS;
+        this.status = TransferStatus.SUCCEEDED;
     }
 
     public void markFailed() {
