@@ -1,4 +1,8 @@
 package com.flowpay.transfer.domain;
 
-public class TransferStatus {
+public enum TransferStatus {
+    PENDING,
+    SUCCESS,
+    FAILED
+
 }
