@@ -19,27 +19,57 @@ public class TransferService {
     }
 
     public Transfer transfer(TransferCommand command) {
-        if (transferRepository.findByRequestId(command.requestId()).isPresent()) {
+        if (transferRepository
+                .findByRequestId(command.requestId())
+                .isPresent()) {
             throw new DuplicateTransferException();
         }
-        Wallet sender = walletRepository.findById(command.senderWalletId()).orElseThrow(() -> new IllegalArgumentException("Sender wallet not found!"));
 
-        Wallet receiver = walletRepository.findById(command.receiverWalletId()).orElseThrow(() -> new IllegalArgumentException("Receiver wallet not found!"));
+        Transfer transfer = new Transfer(
+                UUID.randomUUID().toString(),
+                command.requestId(),
+                command.senderWalletId(),
+                command.receiverWalletId(),
+                command.amount()
+        );
 
-        Transfer transfer = new Transfer(UUID.randomUUID().toString(), command.requestId(), command.senderWalletId(), command.receiverWalletId(), command.amount());
+        try {
+            Wallet sender = walletRepository
+                    .findById(command.senderWalletId())
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Sender wallet not found!"
+                            )
+                    );
 
-        Money amount = command.amount();
-        sender.ensureCanDebit(amount);
-        receiver.ensureCanCredit(amount);
+            Wallet receiver = walletRepository
+                    .findById(command.receiverWalletId())
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Receiver wallet not found!"
+                            )
+                    );
 
-        sender.debit(command.amount());
-        receiver.credit(command.amount());
+            Money amount = command.amount();
 
-        transfer.markSucceeded();
-        walletRepository.save(sender);
-        walletRepository.save(receiver);
-        transferRepository.save(transfer);
+            sender.ensureCanDebit(amount);
+            receiver.ensureCanCredit(amount);
 
-        return transfer;
+            sender.debit(amount);
+            receiver.credit(amount);
+
+            transfer.markSucceeded();
+
+            walletRepository.save(sender);
+            walletRepository.save(receiver);
+            transferRepository.save(transfer);
+
+            return transfer;
+
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            transfer.markFailed();
+            transferRepository.save(transfer);
+            throw exception;
+        }
     }
 }

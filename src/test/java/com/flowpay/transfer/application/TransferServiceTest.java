@@ -93,35 +93,6 @@ public class TransferServiceTest {
     }
 
     @Test
-    void should_reject_when_sender_balance_is_insufficient() {
-        Wallet sender = new Wallet(
-                "wallet-an",
-                "user-id",
-                new Money(new BigDecimal("50000"))
-        );
-        Wallet receiver = new Wallet(
-                "wallet-binh",
-                "user-binh",
-                new Money(new BigDecimal("50000"))
-        );
-
-        walletRepository.save(sender);
-        walletRepository.save(receiver);
-
-        TransferCommand command = new TransferCommand(
-                "transfer-001",
-                "wallet-an",
-                "wallet-binh",
-                new Money(new BigDecimal("1000000"))
-        );
-
-        assertThrows(IllegalStateException.class, () -> transferService.transfer(command));
-        assertEquals(new BigDecimal("50000"), sender.getBalance().getAmount());
-        assertEquals(new BigDecimal("50000"), receiver.getBalance().getAmount());
-        assertTrue(transferRepository.findByRequestId("transfer-001").isEmpty());
-    }
-
-    @Test
     void should_reject_duplicate_request_id() {
         Wallet sender = new Wallet(
                 "wallet-an",
@@ -179,7 +150,14 @@ public class TransferServiceTest {
         assertThrows(IllegalStateException.class, () -> transferService.transfer(command));
         assertEquals(new BigDecimal("1000000"), sender.getBalance().getAmount());
         assertEquals(new BigDecimal("1000000"), receiver.getBalance().getAmount());
-        assertTrue(transferRepository.findByRequestId("request-001").isEmpty());
+        Transfer failedTransfer = transferRepository
+                .findByRequestId("request-001")
+                .orElseThrow();
+
+        assertEquals(
+                TransferStatus.FAILED,
+                failedTransfer.getStatus()
+        );
     }
 
     @Test
@@ -209,7 +187,14 @@ public class TransferServiceTest {
         assertThrows(IllegalStateException.class, () -> transferService.transfer(command));
         assertEquals(new BigDecimal("1000000"), sender.getBalance().getAmount());
         assertEquals(new BigDecimal("1000000"), receiver.getBalance().getAmount());
-        assertTrue(transferRepository.findByRequestId("request-001").isEmpty());
+        Transfer failedTransfer = transferRepository
+                .findByRequestId("request-001")
+                .orElseThrow();
+
+        assertEquals(
+                TransferStatus.FAILED,
+                failedTransfer.getStatus()
+        );
     }
 
     @Test
@@ -242,5 +227,37 @@ public class TransferServiceTest {
 
         assertEquals(TransferStatus.SUCCEEDED, savedTransfer.getStatus());
         assertEquals(new BigDecimal("300000"), savedTransfer.getAmount().getAmount());
+    }
+
+    @Test
+    void should_record_failed_transfer_when_balance_is_insufficient() {
+        Wallet sender = new Wallet(
+                "wallet-an",
+                "user-an",
+                new Money(new BigDecimal("50000"))
+        );
+
+        Wallet receiver = new Wallet(
+                "wallet-binh",
+                "user-binh",
+                new Money(new BigDecimal("50000"))
+        );
+
+        walletRepository.save(sender);
+        walletRepository.save(receiver);
+
+        TransferCommand transferCommand = new TransferCommand(
+                "request-001",
+                "wallet-an",
+                "wallet-binh",
+                new Money(new BigDecimal("1000000"))
+        );
+
+        assertThrows(IllegalStateException.class, () -> transferService.transfer(transferCommand));
+        assertEquals(new BigDecimal("50000"), sender.getBalance().getAmount());
+        assertEquals(new BigDecimal("50000"), receiver.getBalance().getAmount());
+        Transfer failedTransfer = transferRepository.findByRequestId("request-001")
+                .orElseThrow();
+        assertEquals(TransferStatus.FAILED, failedTransfer.getStatus());
     }
 }
