@@ -42,6 +42,22 @@ public class Wallet {
         }
     }
 
+    public void ensureCanCredit(Money amount) {
+        validateTransactionAmount(amount);
+        ensureActive();
+    }
+
+    public void ensureCanDebit(Money amount) {
+        validateTransactionAmount(amount);
+        ensureActive();
+
+        if (this.balance.isLessThan(amount)) {
+            throw new IllegalStateException(
+                    "Insufficient wallet balance!"
+            );
+        }
+    }
+
     public void block() {
         this.status = WalletStatus.BLOCKED;
     }
@@ -51,15 +67,12 @@ public class Wallet {
     }
 
     public void credit(Money amount) {
-        validateTransactionAmount(amount);
-        ensureActive();
+        ensureCanCredit(amount);
         this.balance = this.balance.add(amount);
-
     }
 
     public void debit(Money amount) {
-        validateTransactionAmount(amount);
-        ensureActive();
+        ensureCanDebit(amount);
         if (this.balance.isLessThan(amount)) {
             throw new IllegalStateException("Insufficient wallet balance!");
         }
