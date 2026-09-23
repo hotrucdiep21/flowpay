@@ -5,6 +5,7 @@ import com.flowpay.infrastructure.persistence.inmemory.InMemoryWalletRepository;
 import com.flowpay.transfer.domain.Transfer;
 import com.flowpay.transfer.domain.TransferStatus;
 import com.flowpay.transfer.domain.exception.DuplicateTransferException;
+import com.flowpay.wallet.application.exception.WalletNotFoundException;
 import com.flowpay.wallet.domain.Money;
 import com.flowpay.wallet.domain.Wallet;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +70,7 @@ public class TransferServiceTest {
                 new Money(new BigDecimal("3000000"))
         );
 
-        assertThrows(IllegalArgumentException.class, () -> transferService.transfer(command));
+        assertThrows(WalletNotFoundException.class, () -> transferService.transfer(command));
     }
 
     @Test
@@ -89,7 +90,7 @@ public class TransferServiceTest {
                 new Money(new BigDecimal("30000"))
         );
 
-        assertThrows(IllegalArgumentException.class, () -> transferService.transfer(command));
+        assertThrows(WalletNotFoundException.class, () -> transferService.transfer(command));
     }
 
     @Test
