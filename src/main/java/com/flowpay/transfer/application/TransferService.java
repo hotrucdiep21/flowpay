@@ -3,6 +3,7 @@ package com.flowpay.transfer.application;
 import com.flowpay.transfer.application.port.TransferRepository;
 import com.flowpay.transfer.domain.Transfer;
 import com.flowpay.transfer.domain.exception.DuplicateTransferException;
+import com.flowpay.wallet.application.exception.WalletNotFoundException;
 import com.flowpay.wallet.application.port.WalletRepository;
 import com.flowpay.wallet.domain.Money;
 import com.flowpay.wallet.domain.Wallet;
@@ -22,7 +23,7 @@ public class TransferService {
         if (transferRepository
                 .findByRequestId(command.requestId())
                 .isPresent()) {
-            throw new DuplicateTransferException();
+            throw new DuplicateTransferException(command.requestId());
         }
 
         Transfer transfer = new Transfer(
@@ -37,17 +38,13 @@ public class TransferService {
             Wallet sender = walletRepository
                     .findById(command.senderWalletId())
                     .orElseThrow(() ->
-                            new IllegalArgumentException(
-                                    "Sender wallet not found!"
-                            )
+                            new WalletNotFoundException(command.senderWalletId())
                     );
 
             Wallet receiver = walletRepository
                     .findById(command.receiverWalletId())
                     .orElseThrow(() ->
-                            new IllegalArgumentException(
-                                    "Receiver wallet not found!"
-                            )
+                            new WalletNotFoundException(command.receiverWalletId())
                     );
 
             Money amount = command.amount();
@@ -66,7 +63,7 @@ public class TransferService {
 
             return transfer;
 
-        } catch (IllegalArgumentException | IllegalStateException exception) {
+        } catch (WalletNotFoundException | IllegalArgumentException | IllegalStateException exception) {
             transfer.markFailed();
             transferRepository.save(transfer);
             throw exception;
