@@ -1,5 +1,6 @@
 package com.flowpay.wallet.domain;
 
+import com.flowpay.wallet.domain.exception.InsufficientBalanceException;
 import org.junit.jupiter.api.Test;
 
 
@@ -89,7 +90,7 @@ public class WalletTest {
     void should_reject_debit_when_balance_is_insufficient() {
         Wallet wallet = new Wallet("wallet-an", "user-an", new Money(new BigDecimal("100000")));
 
-        assertThrows(IllegalStateException.class, () -> wallet.debit(new Money(new BigDecimal("200000"))));
+        assertThrows(InsufficientBalanceException.class, () -> wallet.debit(new Money(new BigDecimal("200000"))));
 
         assertEquals(new BigDecimal("100000"), wallet.getBalance().getAmount());
     }

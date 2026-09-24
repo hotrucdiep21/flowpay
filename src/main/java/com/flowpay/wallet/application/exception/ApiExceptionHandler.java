@@ -1,6 +1,8 @@
 package com.flowpay.wallet.application.exception;
 
 import com.flowpay.transfer.domain.exception.DuplicateTransferException;
+import com.flowpay.wallet.domain.exception.InsufficientBalanceException;
+import com.flowpay.wallet.domain.exception.WalletNotActiveException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,5 +31,23 @@ public class ApiExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(response);
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ApiErrorResponse> handleInsufficientBalance(InsufficientBalanceException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiErrorResponse("INSUFFICIENT_BALANCE",
+                exception.getMessage()));
+    }
+
+    @ExceptionHandler(WalletNotActiveException.class)
+    public ResponseEntity<ApiErrorResponse> handleWalletNotActive(
+            WalletNotActiveException exception
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ApiErrorResponse(
+                        "WALLET_NOT_ACTIVE",
+                        exception.getMessage()
+                ));
     }
 }

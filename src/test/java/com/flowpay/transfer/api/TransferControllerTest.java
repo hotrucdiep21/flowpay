@@ -209,4 +209,103 @@ class TransferControllerTest {
         assertEquals(new BigDecimal("300000"), receiver.getBalance().getAmount());
 
     }
+
+    @Test
+    void should_return_409_when_sender_balance_is_insufficient() throws Exception {
+        Wallet sender = new Wallet(
+                "wallet-poor-sender",
+                "user-an",
+                new Money(new BigDecimal("100000"))
+        );
+
+        Wallet receiver = new Wallet(
+                "wallet-insufficient-receiver",
+                "user-binh",
+                new Money(BigDecimal.ZERO)
+        );
+
+        walletRepository.save(sender);
+        walletRepository.save(receiver);
+
+        String requestBody = """
+                {
+                  "requestId": "request-insufficient-balance",
+                  "senderWalletId": "wallet-poor-sender",
+                  "receiverWalletId": "wallet-insufficient-receiver",
+                  "amount": 300000
+                }
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("INSUFFICIENT_BALANCE"));
+
+        assertEquals(new BigDecimal("100000"), sender.getBalance().getAmount());
+        assertEquals(BigDecimal.ZERO, receiver.getBalance().getAmount());
+
+        Transfer failedTransfer = transferRepository.findByRequestId("request-insufficient-balance").orElseThrow();
+
+        assertEquals(TransferStatus.FAILED, failedTransfer.getStatus());
+    }
+
+    @Test
+    void should_return_409_without_debiting_sender_when_receiver_is_blocked()
+            throws Exception {
+
+        Wallet sender = new Wallet(
+                "wallet-blocked-test-sender",
+                "user-an",
+                new Money(new BigDecimal("1000000"))
+        );
+
+        Wallet receiver = new Wallet(
+                "wallet-blocked-receiver",
+                "user-binh",
+                new Money(new BigDecimal("200000"))
+        );
+
+        receiver.block();
+
+        walletRepository.save(sender);
+        walletRepository.save(receiver);
+
+        String requestBody = """
+                {
+                  "requestId": "request-blocked-receiver",
+                  "senderWalletId": "wallet-blocked-test-sender",
+                  "receiverWalletId": "wallet-blocked-receiver",
+                  "amount": 300000
+                }
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isConflict())
+                .andExpect(
+                        jsonPath("$.code")
+                                .value("WALLET_NOT_ACTIVE")
+                );
+
+        assertEquals(
+                new BigDecimal("1000000"),
+                sender.getBalance().getAmount()
+        );
+
+        assertEquals(
+                new BigDecimal("200000"),
+                receiver.getBalance().getAmount()
+        );
+
+        Transfer failedTransfer = transferRepository
+                .findByRequestId("request-blocked-receiver")
+                .orElseThrow();
+
+        assertEquals(
+                TransferStatus.FAILED,
+                failedTransfer.getStatus()
+        );
+    }
 }

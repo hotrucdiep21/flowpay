@@ -1,5 +1,8 @@
 package com.flowpay.wallet.domain;
 
+import com.flowpay.wallet.domain.exception.InsufficientBalanceException;
+import com.flowpay.wallet.domain.exception.WalletNotActiveException;
+
 public class Wallet {
     private final String id;
     private final String ownerId;
@@ -38,7 +41,7 @@ public class Wallet {
 
     private void ensureActive() {
         if (this.status != WalletStatus.ACTIVE) {
-            throw new IllegalStateException("Only active wallets can perform transaction!");
+            throw new WalletNotActiveException(id, status);
         }
     }
 
@@ -52,9 +55,7 @@ public class Wallet {
         ensureActive();
 
         if (this.balance.isLessThan(amount)) {
-            throw new IllegalStateException(
-                    "Insufficient wallet balance!"
-            );
+            throw new InsufficientBalanceException(id, balance, amount);
         }
     }
 
