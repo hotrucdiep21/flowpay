@@ -4,6 +4,7 @@ import com.flowpay.transfer.application.TransferCommand;
 import com.flowpay.transfer.application.TransferService;
 import com.flowpay.transfer.domain.Transfer;
 import com.flowpay.wallet.domain.Money;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,7 @@ public class TransferController {
     }
 
     @PostMapping
-    public ResponseEntity<TransferResponse> createTransfer(@RequestBody CreateTransferRequest request) {
+    public ResponseEntity<TransferResponse> createTransfer(@Valid @RequestBody CreateTransferRequest request) {
         TransferCommand command = new TransferCommand(
                 request.requestId(),
                 request.senderWalletId(),
