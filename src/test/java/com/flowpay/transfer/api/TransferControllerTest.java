@@ -1,5 +1,6 @@
 package com.flowpay.transfer.api;
 
+import com.flowpay.transfer.application.TransferService;
 import com.flowpay.transfer.application.port.TransferRepository;
 import com.flowpay.transfer.domain.Transfer;
 import com.flowpay.transfer.domain.TransferStatus;
@@ -11,11 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -29,8 +33,151 @@ class TransferControllerTest {
     @Autowired
     private WalletRepository walletRepository;
 
+    @MockitoSpyBean
+    private TransferService transferService;
+
     @Autowired
     private TransferRepository transferRepository;
+
+    @Test
+    void should_return_bad_request_when_receiver_wallet_id_is_blank()
+            throws Exception {
+
+        String requestBody = """
+                {
+                  "requestId": "request-validation-receiver",
+                  "senderWalletId": "wallet-an",
+                  "receiverWalletId": " ",
+                  "amount": 300000
+                }
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transferService);
+    }
+
+    @Test
+    void should_return_bad_request_when_amount_is_negative()
+            throws Exception {
+
+        String requestBody = """
+                {
+                  "requestId": "request-validation-negative",
+                  "senderWalletId": "wallet-an",
+                  "receiverWalletId": "wallet-binh",
+                  "amount": -100000
+                }
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transferService);
+    }
+
+    @Test
+    void should_return_bad_request_when_sender_wallet_id_is_blank() throws Exception {
+        String requestBody = """
+                {
+                  "requestId": "request-001",
+                  "senderWalletId": " ",
+                  "receiverWalletId": "wallet-binh",
+                  "amount": 300000
+                }
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transferService);
+    }
+
+    @Test
+    void should_return_bad_request_when_amount_is_null() throws Exception {
+        String requestBody = """
+                {
+                  "requestId": "request-validation-003",
+                  "senderWalletId": "wallet-an",
+                  "receiverWalletId": "wallet-binh",
+                  "amount": null
+                }
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transferService);
+    }
+
+    @Test
+    void should_return_bad_request_when_amount_is_zero()
+            throws Exception {
+
+        String requestBody = """
+                {
+                  "requestId": "request-validation-004",
+                  "senderWalletId": "wallet-an",
+                  "receiverWalletId": "wallet-binh",
+                  "amount": 0
+                }
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transferService);
+    }
+
+    @Test
+    void should_return_bad_request_when_request_id_is_blank() throws Exception {
+        String requestBody = """
+                {
+                  "requestId": " ",
+                  "senderWalletId": "wallet-an",
+                  "receiverWalletId": "wallet-binh",
+                  "amount": 300000
+                }
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transferService);
+    }
+
+    @Test
+    void should_return_bad_request_when_json_is_malformed()
+            throws Exception {
+
+        String requestBody = """
+                {
+                  "requestId": "request-validation-006",
+                  "senderWalletId": "wallet-an",
+                  "receiverWalletId": "wallet-binh",
+                  "amount": 300000
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(transferService);
+    }
 
     @Test
     void should_return_404_when_sender_wallet_does_not_exist() throws Exception {
