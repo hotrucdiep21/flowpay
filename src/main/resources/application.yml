@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: ${FLOWPAY_DB_URL:jdbc:postgresql://localhost:5433/flowpay}
+    username: ${FLOWPAY_DB_USERNAME:flowpay}
+    password: ${FLOWPAY_DB_PASSWORD:flowpay}
+  jpa:
+    hibernate:
+      ddl-auto:validate
+    open-in-view: false
+
+  flyway:
+    enable:true
