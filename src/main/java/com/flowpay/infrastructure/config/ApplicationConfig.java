@@ -8,10 +8,12 @@ import com.flowpay.wallet.application.WalletService;
 import com.flowpay.wallet.application.port.WalletRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class ApplicationConfig {
     @Bean
+    @Profile("!jpa")
     public WalletRepository walletRepository() {
         return new InMemoryWalletRepository();
     }
