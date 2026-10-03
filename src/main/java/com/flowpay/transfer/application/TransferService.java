@@ -7,18 +7,22 @@ import com.flowpay.wallet.application.exception.WalletNotFoundException;
 import com.flowpay.wallet.application.port.WalletRepository;
 import com.flowpay.wallet.domain.Money;
 import com.flowpay.wallet.domain.Wallet;
+import jakarta.transaction.Transactional;
 
 import java.util.UUID;
 
 public class TransferService {
     private final WalletRepository walletRepository;
     private final TransferRepository transferRepository;
+    private final FailedTransferRecorder failedTransferRecorder;
 
-    public TransferService(WalletRepository walletRepository, TransferRepository transferRepository) {
+    public TransferService(WalletRepository walletRepository, TransferRepository transferRepository, FailedTransferRecorder failedTransferRecorder) {
         this.walletRepository = walletRepository;
         this.transferRepository = transferRepository;
+        this.failedTransferRecorder = failedTransferRecorder;
     }
 
+    @Transactional
     public Transfer transfer(TransferCommand command) {
         if (transferRepository
                 .findByRequestId(command.requestId())
@@ -65,7 +69,8 @@ public class TransferService {
 
         } catch (WalletNotFoundException | IllegalArgumentException | IllegalStateException exception) {
             transfer.markFailed();
-            transferRepository.save(transfer);
+            failedTransferRecorder.record(transfer);
+//            transferRepository.save(transfer);
             throw exception;
         }
     }

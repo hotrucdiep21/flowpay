@@ -10,17 +10,52 @@ public class Transfer {
     private final Money amount;
     private TransferStatus status;
 
-    public Transfer(String id, String requestId, String senderWalletId, String receiverWalletId, Money amount) {
-        validateTransfer(id, requestId, senderWalletId, receiverWalletId, amount);
+    private Transfer(
+            String id,
+            String requestId,
+            String senderWalletId,
+            String receiverWalletId,
+            Money amount,
+            TransferStatus status
+    ) {
+        validateTransfer(
+                id,
+                requestId,
+                senderWalletId,
+                receiverWalletId,
+                amount
+        );
+
+        if (status == null) {
+            throw new IllegalArgumentException(
+                    "Transfer status must not be null!"
+            );
+        }
 
         this.id = id;
         this.requestId = requestId;
         this.senderWalletId = senderWalletId;
         this.receiverWalletId = receiverWalletId;
         this.amount = amount;
-        this.status = TransferStatus.PENDING;
+        this.status = status;
     }
 
+    public Transfer(
+            String id,
+            String requestId,
+            String senderWalletId,
+            String receiverWalletId,
+            Money amount
+    ) {
+        this(
+                id,
+                requestId,
+                senderWalletId,
+                receiverWalletId,
+                amount,
+                TransferStatus.PENDING
+        );
+    }
 
     private static void validateTransfer(String id,
                                          String requestId,
@@ -50,8 +85,26 @@ public class Transfer {
         }
     }
 
+    public static Transfer restore(
+            String id,
+            String requestId,
+            String senderWalletId,
+            String receiverWalletId,
+            Money amount,
+            TransferStatus status
+    ) {
+        return new Transfer(
+                id,
+                requestId,
+                senderWalletId,
+                receiverWalletId,
+                amount,
+                status
+        );
+    }
+
     private void ensurePending() {
-        if(this.status != TransferStatus.PENDING) {
+        if (this.status != TransferStatus.PENDING) {
             throw new IllegalStateException(
                     "Only pending transfer can change status!"
             );

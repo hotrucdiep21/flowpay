@@ -19,15 +19,18 @@ public class TransferServiceTest {
     private InMemoryWalletRepository walletRepository;
     private InMemoryTransferRepository transferRepository;
     private TransferService transferService;
+    private FailedTransferRecorder failedTransferRecorder;
 
     @BeforeEach
     void setUp() {
         walletRepository = new InMemoryWalletRepository();
         transferRepository = new InMemoryTransferRepository();
+        failedTransferRecorder = new FailedTransferRecorder(transferRepository);
 
         transferService = new TransferService(
                 walletRepository,
-                transferRepository
+                transferRepository,
+                failedTransferRecorder
         );
     }
 

@@ -2,6 +2,7 @@ package com.flowpay;
 
 import com.flowpay.infrastructure.persistence.inmemory.InMemoryTransferRepository;
 import com.flowpay.infrastructure.persistence.inmemory.InMemoryWalletRepository;
+import com.flowpay.transfer.application.FailedTransferRecorder;
 import com.flowpay.transfer.application.TransferCommand;
 import com.flowpay.transfer.application.TransferService;
 import com.flowpay.transfer.domain.Transfer;
@@ -13,13 +14,23 @@ import java.math.BigDecimal;
 public class Main {
 
     public static void main(String[] args) {
-        InMemoryWalletRepository walletRepository = new InMemoryWalletRepository();
-        InMemoryTransferRepository transferRepository = new InMemoryTransferRepository();
+        InMemoryWalletRepository walletRepository =
+                new InMemoryWalletRepository();
 
-        TransferService transferService = new TransferService(
-                walletRepository,
-                transferRepository
-        );
+        InMemoryTransferRepository transferRepository =
+                new InMemoryTransferRepository();
+
+        FailedTransferRecorder failedTransferRecorder =
+                new FailedTransferRecorder(
+                        transferRepository
+                );
+
+        TransferService transferService =
+                new TransferService(
+                        walletRepository,
+                        transferRepository,
+                        failedTransferRecorder
+                );
 
         Wallet sender = new Wallet(
                 "wallet-an",
