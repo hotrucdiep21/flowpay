@@ -9,6 +9,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TransferTest {
+
+    @Test
+    void should_restore_transfer_with_existing_status() {
+        Transfer transfer = Transfer.restore(
+                "transfer-001",
+                "request-001",
+                "wallet-an",
+                "wallet-binh",
+                new Money(new BigDecimal("300000")),
+                TransferStatus.SUCCEEDED
+        );
+
+        assertEquals("transfer-001", transfer.getId());
+        assertEquals("request-001", transfer.getRequestId());
+        assertEquals(
+                TransferStatus.SUCCEEDED,
+                transfer.getStatus()
+        );
+    }
+
     @Test
     void should_create_pending_transfer() {
         Money amount = new Money(new BigDecimal("300000"));

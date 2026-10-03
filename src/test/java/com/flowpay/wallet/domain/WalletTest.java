@@ -10,6 +10,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class WalletTest {
+
+    @Test
+    void should_restore_wallet_with_existing_status() {
+        Wallet wallet = Wallet.restore(
+                "wallet-an",
+                "user-an",
+                new Money(new BigDecimal("1000000")),
+                WalletStatus.BLOCKED
+        );
+        assertEquals("wallet-an", wallet.getId());
+        assertEquals("user-an", wallet.getOwnerId());
+        assertEquals(
+                new BigDecimal("1000000"),
+                wallet.getBalance().getAmount()
+        );
+        assertEquals(WalletStatus.BLOCKED, wallet.getStatus());
+    }
+
     @Test
     void should_create_active_wallet_with_initial_balance() {
         Money initialBalance = new Money(new BigDecimal("1000000"));
