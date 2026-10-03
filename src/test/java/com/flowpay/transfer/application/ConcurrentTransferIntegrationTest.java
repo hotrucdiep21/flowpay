@@ -207,4 +207,50 @@ class ConcurrentTransferIntegrationTest {
 
         return false;
     }
+
+    @Test
+    void should_process_same_request_id_only_once_when_requests_are_concurrent()
+            throws Exception {
+
+        TransferCommand command = new TransferCommand(
+                "same-concurrent-request",
+                SENDER_ID,
+                RECEIVER_ONE_ID,
+                new Money(new BigDecimal("400000"))
+        );
+
+        Future<Transfer> firstResult =
+                executor.submit(() -> transferService.transfer(command));
+
+        Future<Transfer> secondResult =
+                executor.submit(() -> transferService.transfer(command));
+
+        int succeededCount = 0;
+        int failedCount = 0;
+
+        for (Future<Transfer> result : List.of(firstResult, secondResult)) {
+            try {
+                result.get(10, TimeUnit.SECONDS);
+                succeededCount++;
+            } catch (ExecutionException exception) {
+                failedCount++;
+            }
+        }
+
+        assertEquals(1, succeededCount);
+        assertEquals(1, failedCount);
+
+        WalletJpaEntity sender = walletRepository
+                .findById(SENDER_ID)
+                .orElseThrow();
+
+        WalletJpaEntity receiver = walletRepository
+                .findById(RECEIVER_ONE_ID)
+                .orElseThrow();
+
+        assertMoneyEquals("100000", sender.getBalance());
+        assertMoneyEquals("400000", receiver.getBalance());
+
+        assertEquals(1L, transferRepository.count());
+    }
 }
