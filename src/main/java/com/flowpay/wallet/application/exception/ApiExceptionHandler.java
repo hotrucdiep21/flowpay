@@ -7,9 +7,25 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiErrorResponse> handleConcurrentModification(
+            ObjectOptimisticLockingFailureException exception
+    ) {
+        ApiErrorResponse response = new ApiErrorResponse(
+                "CONCURRENT_MODIFICATION",
+                "Wallet was modified by another request. Please retry."
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
     @ExceptionHandler(WalletNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleWalletNotFound(WalletNotFoundException exception) {
         ApiErrorResponse response = new ApiErrorResponse(

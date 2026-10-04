@@ -1,5 +1,6 @@
 package com.flowpay.transfer.api;
 
+import com.flowpay.transfer.application.TransferCommand;
 import com.flowpay.transfer.application.TransferService;
 import com.flowpay.transfer.application.port.TransferRepository;
 import com.flowpay.transfer.domain.Transfer;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,9 +21,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,6 +43,43 @@ class TransferControllerTest {
 
     @Autowired
     private TransferRepository transferRepository;
+
+    @Test
+    void should_return_409_when_wallet_is_modified_concurrently()
+            throws Exception {
+
+        doThrow(
+                new ObjectOptimisticLockingFailureException(
+                        Wallet.class,
+                        "wallet-concurrent-sender"
+                )
+        ).when(transferService)
+                .transfer(any(TransferCommand.class));
+
+        String requestBody = """
+                {
+                  "requestId": "request-concurrent-api",
+                  "senderWalletId": "wallet-concurrent-sender",
+                  "receiverWalletId": "wallet-concurrent-receiver",
+                  "amount": 300000
+                }
+                """;
+
+        mockMvc.perform(post("/api/transfers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isConflict())
+                .andExpect(
+                        jsonPath("$.code")
+                                .value("CONCURRENT_MODIFICATION")
+                )
+                .andExpect(
+                        jsonPath("$.message")
+                                .value(
+                                        "Wallet was modified by another request. Please retry."
+                                )
+                );
+    }
 
     @Test
     void should_return_bad_request_when_receiver_wallet_id_is_blank()
