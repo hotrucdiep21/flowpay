@@ -1,5 +1,6 @@
 package com.flowpay.transfer.application;
 
+import com.flowpay.support.PostgresTestContainerConfig;
 import com.flowpay.transfer.application.port.TransferRepository;
 import com.flowpay.transfer.domain.Transfer;
 import com.flowpay.transfer.infrastructure.persistence.jpa.SpringDataTransferRepository;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ActiveProfiles({"jpa", "test"})
+@Import(PostgresTestContainerConfig.class)
 public class TransferTransactionIntegrationTest {
     @Autowired
     private TransferService transferService;

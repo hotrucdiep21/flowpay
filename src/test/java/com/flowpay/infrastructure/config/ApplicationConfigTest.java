@@ -1,5 +1,6 @@
 package com.flowpay.infrastructure.config;
 
+import com.flowpay.support.PostgresTestContainerConfig;
 import com.flowpay.transfer.application.TransferService;
 import com.flowpay.transfer.application.port.TransferRepository;
 import com.flowpay.wallet.application.WalletService;
@@ -7,10 +8,13 @@ import com.flowpay.wallet.application.port.WalletRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@Import(PostgresTestContainerConfig.class)
 public class ApplicationConfigTest {
     @Autowired
     private WalletRepository walletRepository;

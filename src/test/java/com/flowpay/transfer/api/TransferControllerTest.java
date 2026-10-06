@@ -1,5 +1,6 @@
 package com.flowpay.transfer.api;
 
+import com.flowpay.support.PostgresTestContainerConfig;
 import com.flowpay.transfer.application.TransferCommand;
 import com.flowpay.transfer.application.TransferService;
 import com.flowpay.transfer.application.port.TransferRepository;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -30,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Import(PostgresTestContainerConfig.class)
 class TransferControllerTest {
 
     @Autowired
