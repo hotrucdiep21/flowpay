@@ -1,5 +1,6 @@
 package com.flowpay.config;
 
+import com.flowpay.support.PostgresTestContainerConfig;
 import com.flowpay.transfer.application.port.TransferRepository;
 import com.flowpay.transfer.infrastructure.persistence.jpa.JpaTransferRepositoryAdapter;
 import com.flowpay.wallet.application.port.WalletRepository;
@@ -7,12 +8,14 @@ import com.flowpay.wallet.infrastructure.persistence.jpa.JpaWalletRepositoryAdap
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 @SpringBootTest
 @ActiveProfiles("jpa")
+@Import(PostgresTestContainerConfig.class)
 class JpaRepositoryWiringTest {
 
     @Autowired

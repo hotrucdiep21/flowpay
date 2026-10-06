@@ -1,5 +1,6 @@
 package com.flowpay.transfer.application;
 
+import com.flowpay.support.PostgresTestContainerConfig;
 import com.flowpay.transfer.domain.Transfer;
 import com.flowpay.transfer.infrastructure.persistence.jpa.SpringDataTransferRepository;
 import com.flowpay.wallet.domain.Money;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -34,6 +36,7 @@ import static org.mockito.Mockito.doAnswer;
 
 @SpringBootTest
 @ActiveProfiles("jpa")
+@Import(PostgresTestContainerConfig.class)
 class ConcurrentTransferIntegrationTest {
 
     private static final String SENDER_ID = "wallet-concurrent-sender";

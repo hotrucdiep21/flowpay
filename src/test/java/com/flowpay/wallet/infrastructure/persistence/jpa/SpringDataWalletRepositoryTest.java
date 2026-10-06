@@ -1,20 +1,16 @@
 package com.flowpay.wallet.infrastructure.persistence.jpa;
 
+import com.flowpay.support.FlowPayJpaTest;
 import com.flowpay.wallet.domain.WalletStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(
-        replace = AutoConfigureTestDatabase.Replace.NONE
-)
+@FlowPayJpaTest
 public class SpringDataWalletRepositoryTest {
     @Autowired
     private SpringDataWalletRepository repository;

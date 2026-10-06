@@ -1,5 +1,6 @@
 package com.flowpay.transfer.application;
 
+import com.flowpay.support.PostgresTestContainerConfig;
 import com.flowpay.transfer.domain.TransferStatus;
 import com.flowpay.transfer.infrastructure.persistence.jpa.SpringDataTransferRepository;
 import com.flowpay.wallet.application.port.WalletRepository;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
@@ -19,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles({"jpa", "test"})
+@Import(PostgresTestContainerConfig.class)
 public class FailedTransferPersistenceIntegrationTest {
     @Autowired
     private TransferService transferService;
